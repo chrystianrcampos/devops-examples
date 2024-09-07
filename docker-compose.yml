@@ -1,0 +1,66 @@
+services:
+  kafka:
+    image: docker.io/bitnami/kafka:3.8
+    ports:
+      - 9092:9092
+    volumes:
+      - kafka_data:/bitnami
+    environment:
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://172.17.0.1:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.2
+    ports:
+      - 9091:8080
+    depends_on:
+      - kafka
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=172.17.0.1:9092
+      - DYNAMIC_CONFIG_ENABLED='true'
+  apprise:
+    image: caronc/apprise:1.1
+    ports:
+      - 8000:8000
+    volumes:
+      - apprise:/config
+  minio:
+    image: bitnami/minio:2024.8.17
+    ports:
+      - 9000:9000
+      - 9001:9001
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=admin123
+    volumes:
+      - minio_data:/bitnami/minio/data
+  elasticsearch:
+    image: bitnami/elasticsearch:8.15.0
+    ports:
+      - 9200:9200
+      - 9300:9300
+    volumes:
+      - elasticsearch_data:/bitnami/elasticsearch/data
+  kibana:
+    image: bitnami/kibana:8.15.0
+    ports:
+      - 5601:5601
+    environment:
+      - KIBANA_ELASTICSEARCH_URL=172.17.0.1
+
+volumes:
+  kafka_data:
+    driver: local
+  apprise:
+    driver: local
+  minio_data:
+    driver: local
+  elasticsearch_data:
+    driver: local
