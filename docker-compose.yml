@@ -1,6 +1,14 @@
 services:
+  postgres:
+    image: bitnami/postgresql:15.8.0
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/bitnami/postgresql
+    environment:
+      - POSTGRESQL_PASSWORD=postgres
   kafka:
-    image: docker.io/bitnami/kafka:3.8
+    image: bitnami/kafka:3.8
     ports:
       - 9092:9092
     volumes:
@@ -56,6 +64,8 @@ services:
       - KIBANA_ELASTICSEARCH_URL=172.17.0.1
 
 volumes:
+  postgres_data:
+    driver: local
   kafka_data:
     driver: local
   apprise:
